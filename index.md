@@ -1,4 +1,4 @@
-![Me](me.jpg)
+![Me](/me.jpg)
 
 # Hi, I'm Steven
 And this is my website. I'm a software developer, currently working at IBM.
@@ -7,5 +7,4 @@ And this is my website. I'm a software developer, currently working at IBM.
 TODO
 
 # Contact
-https://www.linkedin.com/in/steven-c-whitehead/
-steven.whitehead007@gmail.com
+[Message me on LinkedIn](https://www.linkedin.com/in/steven-c-whitehead/)
