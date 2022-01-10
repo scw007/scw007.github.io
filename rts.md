@@ -5,14 +5,15 @@ I've been doing a lot of game development in Go, and I'd like to share how I've 
 I think its important to start with the networking aspect of any multiplayer game. In my experience, it is harder to implement multiplayer in an existing game than to do it initially.
 
 Here's an overview of how my initial client-server networking model works:
-1) Once per frame, all player clients send their game inputs to the server.
-2) On one server thread per client, put the inputs on an input queue.
-3) In a single server thread that executes at a specific rate:  
-    1) Process the input queue.
-    2) Update the gamestate.
-    3) Send the gamestate to all the players
-4) In a client thread, all players receive the gamestate.
-5) In another thread, continually draw the gamestate.
+
+1. Once per frame, all player clients send their game inputs to the server.
+2. On one server thread per client, put the inputs on an input queue.
+3. In a single server thread that executes at a specific rate:  
+    1. Process the input queue.
+    2. Update the gamestate.
+    3. Send the gamestate to all the players
+4. In a client thread, all players receive the gamestate.
+5. In another thread, continually draw the gamestate.
 
 Because the server is the authority on the game state, cheating is reduced dramatically. Clients can really only cheat by sending inputs or by parsing the gamestate. For instance, a cheater could make a hack that automatically sends inputs to target an enemy based on the latest gamestate faster than a regular player. The advantage is pretty minimal here. And because the client only sends inputs and draws the gamestate, the client is "dumb" and simple.
 
