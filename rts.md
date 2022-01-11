@@ -79,3 +79,77 @@ Eventually, I will also integrate compression and decompression to these functio
 
 Notice the `Payload` is of type `[]byte`. This way, I can store anything in a `Message`, and then when reading, I can use the `Type` to know how to read it. Normally, it's just json marshalled.
 
+### Client
+Of course, you'll need a game library in order to render your game on the screen. I use [ebiten](https://ebiten.org). I've worked with other go game development libraries, and I have found this one to be the simplest yet very powerful. The website has enough documentation and examples to get you started. For the TLDR, you need to implement and `Update` and `Draw` functions. `Update` usually happens 60 times a second, while `Draw` usually happens at the refresh rate of your screen.
+
+You essentially need 3 threads: drawing, sending inputs, and reading the gamestate from the server. Go has multiple ways of dealing with threading issues, such as channels and locks. Here, we can use `sync.Map` for all of the objects in our gamestate to deal with our threading issues.
+
+Drawing then becomes easy: just read from the map and draw it. For example purposes I left out some things, such as drawing the objects in a specific order.
+
+```golang
+type Actor struct{
+	X, Y float64
+	Image *ebiten.Image
+}
+
+type Game struct{
+	actors sync.Map
+	ws *websocket.Conn
+}
+
+func (g *Game) Draw(screen *ebiten.Image) {
+    	g.actors.Range(func(key, value interface{}) bool {
+		actor := value.(Actor)
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(actor.X, actor.Y)
+		screen.DrawImage(actor.Image, op)
+		return true
+	})
+}
+```
+
+In `Update`, read the inputs and send them to the server. Again, simplified.
+
+```golang
+type Button int
+const (
+	Skill1 Button = iota
+)
+func (g *Game) Update() error {
+	buttons := []Button{}
+	if inpututil.IsKeyJustPressed(ebiten.KeyQ) {
+		inputs = append(buttons, Skill1)
+	}
+	payload, _ := json.Marshal(buttons)
+	msg := network.Message{
+		Type: network.Inputs,
+		Payload: payload,
+	}
+	network.Send(g.ws, msg) // TODO handle error
+	return nil
+}
+```
+
+And finally, reading from the server. You'll need to spin off a go routine for this.
+
+```golang
+func (g *Game) readFromServer() {
+	for {
+		msg, _ := network.Read(g.ws) // TODO handle error
+		switch msg.Type {
+		case network.Gamestate:
+			var gamestate map[string]Actor
+			json.Unmarshal(msg.Payload, &gamestate) // TODO error
+			for id, actor := range gamestate {
+				g.actors.Store(id, actor)
+			}
+			
+		}
+	}
+}
+```
+		
+### Server
+
+More to come.
+
