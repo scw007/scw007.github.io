@@ -1,5 +1,5 @@
 # Implementing an Real Time Strategy (RTS) game in Go
-I've been doing a lot of game development in Go, and I'd like to share how I've been implementing an RTS game using https://ebiten.org/.
+I've been doing a lot of game development in Go, and I'd like to share how I've been implementing an RTS game using [ebiten](https://ebiten.org/).
 
 ## Networking Overview
 I think its important to start with the networking aspect of any multiplayer game. In my experience, it is harder to implement multiplayer in an existing game than to do it initially.
@@ -26,7 +26,8 @@ Also, no matter which protocal you chose, using `recv` directly requires you to 
 
 Well, there is the option of using a higher level interface for networking to deal with those sorts of issues. WebSockets use TCP, and WebRTC uses UDP. These technologies take care of a lot of these lower issues for you.
 
-In the end, I ended up going with WebSockets using https://github.com/nhooyr/websocket for the following reasons:
+In the end, I ended up going with WebSockets using [nhooyr/websocket](https://github.com/nhooyr/websocket) for the following reasons:
+
 1) KISS (Keep It Simple, Stupid). nhooyr's websocket library is ridiculously easy and simple to use.
 2) I don't have to deal with lower level TCP/UDP socket issues.
 3) I haven't had any perceivable latency issues using websockets.
