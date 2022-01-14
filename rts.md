@@ -151,5 +151,151 @@ func (g *Game) readFromServer() {
 		
 ### Server
 
-More to come.
+Before writing your server code, you need to decide between including the server code within your client code distributable or to keep the server code separate. I include the server code in the same executable, because I wanted to give the option for users to run their own servers. You then simply provide an environment variable or command line switch to specify that you are running in server mode instead of client mode. I chose not to include this option in the UI, so I could easily host my executable in the cloud, without starting the graphics options required for ebiten.
 
+Since we are running websockets, you just need to start a http server and then upgrade the connection to a websocket. I also include spinning off a go routine for handling the gamestate.
+
+```golang
+package server
+
+... 
+
+type Handler struct {
+}
+
+func Run() error {
+	port := os.Getenv("PORT")
+	if port == "" {
+		return errors.New("no port provided") 
+	}
+	l, err := net.Listen("tcp", ":"+port)
+	if err != nil {
+		return err
+	}
+
+	hndlr := Handler{}
+
+	s := &http.Server{
+		Handler:      hndlr,
+		ReadTimeout:  time.Second * 10,
+		WriteTimeout: time.Second * 10,
+	}
+	
+	go updateGamestate()
+
+	return s.Serve(l)
+}
+
+func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	c, err := websocket.Accept(w, r, &WebSocketOptions)
+	if err != nil {
+		log.Printf(err.Error())
+		// write an http response to make healtcheck requests happy
+		w.Write([]byte("ok"))
+		return
+	}
+	defer c.Close(websocket.StatusInternalError, "")
+...
+```
+
+Once you've established a websocket connection, you can use a `sync.Map` to store the websockets as well as the players.
+
+```golang
+	// ServeHTTP, continued
+	...
+	id := uuid.NewString()
+	websockets.Store(id, c)
+	players.Store(id, &actor.Actor{})
+	...
+```
+
+Notice I'm using the same actor type here. It makes it easier to handle send the network messages as JSON. Since they are the same type, json marshal/unmarshal works.
+
+Now we can continually handle input message from the client.
+
+```golang
+...
+	for {
+		msg, err := network.Read(c)
+		if err != nil {
+			log.Printf(err.Error())
+			players.Delete(id)
+			webSockets.Delete(id)
+			return
+		}
+		switch msg.Type {
+		case "Inputs":
+			var inputs input.Inputs
+			err := json.Unmarshal(msg.Payload, &inputs)
+			if err != nil {
+				log.Printf(err.Error())
+				players.Delete(id)
+				webSockets.Delete(id)
+				return
+			}
+			inputChannel <- playerInput{
+				id:     id,
+				inputs: inputs,
+			}
+
+		}
+	}
+```
+	
+What's that `inputChannel`? Well, we need some sort of communcation between our routines to get the inputs from all the players to the same place for processing. We will read from the channel in `updateGamestate()`
+
+`updateGamestate()` works by looping by using `select` over two channels, `inputQueue` and a `ticker.C`. On an `inputQueue` message, we append the inputs to a slice. In our `ticker`, we process all of the inputs in the slice, process the game state, and then send it to all the players.
+
+```golang
+func updateGamestate() {
+	inputSlice := []playerInput{}
+	ticker := time.NewTicker(time.Second / 30)
+	for {
+		select {
+		case inputs := <-inputQueue:
+			inputSlice = append(inputSlice, inputs)
+		case <-ticker.C:
+			// update the inputs for all players
+			for _, i := range inputSlice {
+				value, ok := actorMap.Load(i.id)
+				if !ok {
+					continue
+				}
+				p := value.(*actors.Actor)
+				p.UpdateInputs(i.inputs)
+			}
+			inputSlice = []playerInput{}
+
+			// calculate the new game state
+			actorPayload := map[string]actors.Actor{}
+			actorMap.Range(func(key, value interface{}) bool {
+				p := value.(*actors.Actor)
+				p.Update()
+				actorPayload[key.(string)] = *p
+				return true
+			})
+
+			// send the payload to all players
+			payload, err := json.Marshal(actorPayload)
+			if err != nil {
+				log.Print("json marshal error:", err)
+				continue
+			}
+			webSockets.Range(func(key, value interface{}) bool {
+				conn := value.(*websocket.Conn)
+				err := network.Write(conn, network.Message{
+					Type:    "Gamestate",
+					Payload: payload,
+				})
+				if err != nil {
+					log.Printf(err.Error())
+					webSockets.Delete(key)
+				}
+				return true
+			})
+		}
+	}
+}
+```
+
+And thats the basics! I hope this is helpful.
