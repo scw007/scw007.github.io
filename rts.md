@@ -28,10 +28,10 @@ Well, there is the option of using a higher level interface for networking to de
 
 In the end, I ended up going with WebSockets using [nhooyr/websocket](https://github.com/nhooyr/websocket) for the following reasons:
 
-1) KISS (Keep It Simple, Stupid). nhooyr's websocket library is ridiculously easy and simple to use.
-2) I don't have to deal with lower level TCP/UDP socket issues.
-3) I haven't had any perceivable latency issues using websockets.
-4) The library works with Web Assembly. Easy way to run the game in the browser.
+1. KISS (Keep It Simple, Stupid). nhooyr's websocket library is ridiculously easy and simple to use.
+2. I don't have to deal with lower level TCP/UDP socket issues.
+3. I haven't had any perceivable latency issues using websockets.
+4. The library works with Web Assembly. Easy way to run the game in the browser.
 
 If I run into any issues regarding latency, I'll consider a switch to WebRTC, and if that doesn't work out, to UDP.
 
