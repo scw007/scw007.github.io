@@ -2,7 +2,7 @@
 I've been doing a lot of game development in Go, and I'd like to share how I've been implementing an RTS game using [ebiten](https://ebiten.org/).
 
 ## Networking Overview
-I think its important to start with the networking aspect of any multiplayer game. In my experience, it is harder to implement multiplayer in an existing game than to do it initially.
+I think its important to start with the networking aspect of any multiplayer game. In my experience, it is easier to implement multiplayer first than to add it to an existing game.
 
 Here's an overview of how my initial client-server networking model works:
 
@@ -15,16 +15,16 @@ Here's an overview of how my initial client-server networking model works:
 4. In a client thread, all players receive the gamestate.
 5. In another thread, continually draw the gamestate.
 
-Because the server is the authority on the game state, cheating is reduced dramatically. Clients can really only cheat by sending inputs or by parsing the gamestate. For instance, a cheater could make a hack that automatically sends inputs to target an enemy based on the latest gamestate faster than a regular player. The advantage is pretty minimal here. And because the client only sends inputs and draws the gamestate, the client is "dumb" and simple.
+Because the server is the authority on the game state, the client is "dumb" and simple. The client just sends inputs and draws the screen.
 
-One problem of this simple approach is that there is latency between the player's inputs and when the results are drawn on screen. However, because this is an RTS, you don't really "control" your character, you make orders for your units to follow. It is harder to perceive latency here as compared to a platformer or an FPS.
+One problem of this simple approach is that there is latency between the player's inputs and when the results are drawn on screen. However, because this is an RTS, you don't really "control" your character, you make orders for your units to follow. It is harder to perceive latency here as compared to a platformer or a first person shooter.
 
 ### Sending data
 How should the client communicate with the server and vice versa? You basically have to make a decision between TCP and UDP. TCP has a lot overhead for a variety of reasons, such as guaranteed delivery and resending of packets. However, our data is time sensitive. Why resend gamestate that is already too old to use? UDP is much faster. However, UDP is connectionless and does not guarantee delivery of a packet. So even if you go for UDP, you will still need some sort of system to acknowledge that a particular packet has been received.
 
 Also, no matter which protocal you chose, using `recv` directly requires you to write your own messaging protocal, usually by reserving the first couple bytes of data for the message payload size, and then reading that number of bytes from the socket.
 
-Well, there is the option of using a higher level interface for networking to deal with those sorts of issues. WebSockets use TCP, and WebRTC uses UDP. These technologies take care of a lot of these lower issues for you.
+Well, there is the option of using a higher level interface for networking to deal with those sorts of issues. WebSockets use TCP, and WebRTC uses UDP. These technologies take care of a lot of these lower klevel issues for you.
 
 In the end, I ended up going with WebSockets using [nhooyr/websocket](https://github.com/nhooyr/websocket) for the following reasons:
 
@@ -75,6 +75,7 @@ func Write(ws *websocket.Conn, msg Message) error {
 	return ws.Write(context.Background(), websocket.MessageText, payload)
 }
 ```
+
 Eventually, I will also integrate compression and decompression to these functions.
 
 Notice the `Payload` is of type `[]byte`. This way, I can store anything in a `Message`, and then when reading, I can use the `Type` to know how to read it. Normally, it's just json marshalled.
@@ -209,7 +210,7 @@ Once you've established a websocket connection, you can use a `sync.Map` to stor
 	...
 ```
 
-Notice I'm using the same actor type here. It makes it easier to handle send the network messages as JSON. Since they are the same type, json marshal/unmarshal works.
+Notice I'm using the same actor type here. It makes it easier to handle send the network messages as JSON. Since they are the same type, json marshal/unmarshal just works.
 
 Now we can continually handle input message from the client.
 
@@ -244,7 +245,7 @@ Now we can continually handle input message from the client.
 	
 What's that `inputChannel`? Well, we need some sort of communcation between our routines to get the inputs from all the players to the same place for processing. We will read from the channel in `updateGamestate()`
 
-`updateGamestate()` works by looping by using `select` over two channels, `inputQueue` and a `ticker.C`. On an `inputQueue` message, we append the inputs to a slice. In our `ticker`, we process all of the inputs in the slice, process the game state, and then send it to all the players.
+`updateGamestate()` works by looping by using `select` over two channels, `inputQueue` and a `ticker.C`. On an `inputQueue` message, we append the inputs to a slice. In our `ticker`, we process all of the inputs in the slice, process the game state, and then send it to all the players. The parameter to `time.NewTicker` is the tick rate of how often to process the game and send it to the player. I chose 30 times per second, as this is used by one of the most popular RTS (technically a MOBA) games today, Dota 2.
 
 ```golang
 func updateGamestate() {
