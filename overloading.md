@@ -1,4 +1,4 @@
-# Pseudoo Overloading in Go
+# Pseudo Overloading in Go
 Ever wish you could write overloading functions in Go? Well, you can (sorta). I wanted to write this because it was not very obvious to me.
 
 If you don't know about overloading, the idea is that you write one function that takes different parameters. In Java, for example, you write multiple functions with the different supported sets of parameters.
