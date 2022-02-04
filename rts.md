@@ -1,5 +1,5 @@
 # Implementing an Real Time Strategy (RTS) game in Go
-I've been doing a lot of game development in Go, and I'd like to share how I've been implementing an RTS game using [ebiten](https://ebiten.org/).
+There isn't a lot out there for creating games in Go. There also isn't a lot out there for handling network programing for multiplayer games in go. I've been doing a lot of game development in Go, and I'd like to share how I've been implementing an RTS game using [ebiten](https://ebiten.org/) and websockets.
 
 ## Networking Overview
 I think its important to start with the networking aspect of any multiplayer game. In my experience, it is easier to implement multiplayer first than to add it to an existing game.
