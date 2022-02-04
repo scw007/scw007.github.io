@@ -35,6 +35,8 @@ In fact, this is already in use by the standard library:
 func Println(a ...interface{}) (n int, err error)
 ```
 
+Notice that this also works for multiple parameters, aka variadic functions, aka the `...`.
+
 I ran into an interesting use case recently when trying to write a bot for discord. [discordgo](https://github.com/bwmarrin/discordgo) has an example of this using event handler functions.
 
 ```golang
