@@ -1,7 +1,21 @@
-# Psuedo Overloading in Go
+# Pseudoo Overloading in Go
 Ever wish you could write overloading functions in Go? Well, you can (sorta). I wanted to write this because it was not very obvious to me.
 
-If you don't know about overloading, the idea is that you write one function that takes different parameters. Overloading is not officially supported by Go. However, there's a pattern you can use in your code to emulate overloading. All you need is `interface`.
+If you don't know about overloading, the idea is that you write one function that takes different parameters. In Java, for example, you write multiple functions with the different supported sets of parameters.
+
+```java
+    public void printType(int x)
+    {
+        System.out.println("integer")
+    }
+
+    public int printType(string x)
+    {
+        System.out.println("string")
+    }
+```
+
+Overloading is not officially supported by Go. However, there's a pattern you can use in your code to emulate overloading. All you need is `interface`.
 
 ```golang
 package main
@@ -50,5 +64,7 @@ func onJoinVoice(s *discordgo.Session, m *discordgo.VoiceStateUpdate) {
 func onSendText(s *discordgo.Session, m *discordgo.MessageCreate) {
 ...
 ```
+
+You can see how this is implemented [here](https://github.com/bwmarrin/discordgo/blob/v0.23.2/event.go#L120) and [here](https://github.com/bwmarrin/discordgo/blob/v0.23.2/eventhandlers.go#L916).
 
 If you use this pattern, I'd suggest writing good documentation as to what types you support.
