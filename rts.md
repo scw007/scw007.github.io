@@ -2,7 +2,7 @@
 There isn't a lot out there for creating games in Go. There also isn't a lot out there for handling network programing for multiplayer games in go. I've been doing a lot of game development in Go, and I'd like to share how I've been implementing an RTS game using [ebiten](https://ebiten.org/) and websockets.
 
 ## Networking Overview
-I think its important to start with the networking aspect of any multiplayer game. In my experience, it is easier to implement multiplayer first than to add it to an existing game. !!!IF YOU IMPLEMENT IT LATER EXAMPLE!!!
+I think its important to start with the networking aspect of any multiplayer game. In my experience, it is easier to implement multiplayer first than to add it to an existing game. If you implement it later, you may run into issues refactoring major parts of your game logic, mainly around handling the gamestate.
 
 Here's an overview of how my initial client-server networking model works:
 
@@ -22,9 +22,7 @@ Because the server is the authority on the game state, the client is "dumb" and 
 One problem of this simple approach is that there is latency between the player's inputs and when the results are drawn on screen. However, because this is an RTS, you don't really "control" your character, you make orders for your units to follow. Latency is not as important here as compared to a platformer or a first person shooter.
 
 ### Sending data
-How should the client communicate with the server and vice versa? You basically have to make a decision between TCP and UDP. TCP has a lot of overhead for a variety of reasons, such as guaranteed delivery and resending of packets. However, our data is time sensitive. Why resend gamestate that is already too old to use? UDP is much faster. However, UDP is connectionless and does not guarantee delivery of a packet. So even if you go for UDP, it is up to the application to implement guaranteed delivery of packets.
-
-!!!LINKS FOR TCP AND UDP TO CLEANUP THIS DISCUSSION!!!
+How should the client communicate with the server and vice versa? You basically have to make a decision between TCP and UDP. TCP has a lot of overhead for a variety of reasons, such as guaranteed delivery and resending of packets. However, our data is time sensitive. Why resend gamestate that is already too old to use? UDP is much faster. However, UDP is connectionless and does not guarantee delivery of a packet. So even if you go for UDP, it is up to the application to implement guaranteed delivery of packets. See [here](https://gafferongames.com/post/udp_vs_tcp/) for a more indepth discussion.
 
 Also, no matter which transport protocol you choose, using `recv` directly requires you to write your own application messaging protocol, usually by reserving the first couple bytes of data for the message payload size, and then reading that number of bytes from the socket.
 
@@ -300,6 +298,10 @@ func updateGamestate() {
 }
 ```
 
-And thats the basics! I hope this is helpful.
-!!WAYS TO IMPROVE AND FUTURE WORK!!
-!!SCREENSHOTS!!
+And thats the basics! I left out some discussions that I may or may not cover in a future post:
+* Handling drawing and animations locally
+* Client side interpolation
+* Executing game logic and drawing in a fixed order
+* Projectiles, enemies, and other non player objects
+
+I hope this is helpful.
