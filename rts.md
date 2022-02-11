@@ -15,7 +15,7 @@ Here's an overview of how my initial client-server networking model works:
 4. In a client thread, all players receive the gamestate.
 5. In another thread, continually draw the gamestate.
 
-!!! PICTURE !!!
+![image](image.png)
 
 Because the server is the authority on the game state, the client is "dumb" and simple. The client just sends inputs and draws the screen.
 
