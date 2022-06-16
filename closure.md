@@ -37,11 +37,11 @@ func main() {
 
     And the answer is...
 
-    ```
+    <pre>
     three
     three
     three
-    ```
+    </pre>
 
 </details>
 
