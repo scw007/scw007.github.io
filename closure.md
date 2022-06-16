@@ -35,11 +35,11 @@ func main() {
 <details>
     <summary>Answer:</summary>
 
-    ```
-    three
-    three
-    three
-    ```
+```
+three
+three
+three
+```
 
 </details>
 
