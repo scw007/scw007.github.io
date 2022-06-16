@@ -35,13 +35,16 @@ func main() {
 <details>
     <summary>Answer:</summary>
 
-```
-three
-three
-three
-```
+    And the answer is...
+
+    ```
+    three
+    three
+    three
+    ```
 
 </details>
+
 
 I knew that closures had to keep a reference of the variables, so that when a variable's value outside the closure changes, the inner function would have the new value. For example:
 
