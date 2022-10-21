@@ -4,18 +4,7 @@ Ever get the urge to relive old classic arcade games? Some games have been porte
 
 Of course, arcade cabinets take up a lot of room, so it would be nice to play the games and have a decent way to store them. I'm here to tell you that there is a way.
 
-## What you need
-
-- [Game board(s)](#Game_boards)
-- [Supergun](#Supergun)
-- [Video](#Video)
-- [Audio](#Audio)
-- [Power](#Power)
-- [Input](#Input)
-
 ### Game boards
-
-![image](https://user-images.githubusercontent.com/4001640/197288883-fb6dea9f-42b1-44bd-831c-0caef5922003.png)
 
 The actual computer for arcade games are typically just big motherboard PCBs. Most PCBs connect to power, input, video, and sound through a wiring harness standard called JAMMA. JAMMA makes it really easy to repurpose an existing arcade cabinet for use with a new game, saving cost, space, and so on. Games that are older than JAMMA can be used on JAMMA by making a converter. 
 
