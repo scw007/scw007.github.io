@@ -10,6 +10,7 @@ Of course, arcade cabinets take up a lot of room, so it would be nice to play th
 - [Supergun](#Supergun)
 - [Video](#Video)
 - [Audio](#Audio)
+- [Power](#Power)
 - [Input](#Input)
 
 ### Game boards
